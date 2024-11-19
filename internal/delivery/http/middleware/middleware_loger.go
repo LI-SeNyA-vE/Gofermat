@@ -1,4 +1,4 @@
-package logger
+package middleware
 
 import (
 	"github.com/LI-SeNyA-vE/Gofermat/internal/global"

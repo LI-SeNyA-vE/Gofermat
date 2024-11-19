@@ -3,6 +3,7 @@ package global
 import "go.uber.org/zap"
 
 var (
-	Logger    *zap.SugaredLogger
-	ConnectDB *ConfigDb
+	Logger *zap.SugaredLogger
+	Config Configs
+	User   UserCred
 )
