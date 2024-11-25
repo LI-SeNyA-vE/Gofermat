@@ -7,12 +7,19 @@ import (
 
 // Для пакета Connfig
 type Configs struct {
-	DataBase  DataBaseConfig `yaml:"POSTGRES_CONFIG"`
-	SecretKey string         `yaml:"SECRET_KEY"`
-	HashKey   string         `yaml:"HASH_KEY"`
+	DataBase  ConfigDataBase `yaml:"POSTGRES_CONFIG"`
+	Flags     ConfigFlag
+	SecretKey string `yaml:"SECRET_KEY"`
+	HashKey   string `yaml:"HASH_KEY"`
 }
 
-type DataBaseConfig struct {
+type ConfigFlag struct {
+	RunAddress           string
+	DatabaseURI          string
+	AccrualSystemAddress string
+}
+
+type ConfigDataBase struct {
 	Host         string `yaml:"POSTGRES_HOST"`
 	User         string `yaml:"POSTGRES_USER"`
 	Password     string `yaml:"POSTGRES_PASSWORD"`
@@ -32,33 +39,55 @@ type UserCredInDataBase struct {
 	Login    string `gorm:"unique;index"`
 	Password []byte `gorm:"BINARY(32)" json:"-"`
 	Model
-	Orders []OrderUser `gorm:"foreignKey:UserId;references:ID"`
+	Orders  []OrderUser `gorm:"foreignKey:UserId;references:ID;constraint:OnDelete:CASCADE"`
+	Balance BalanceUser `gorm:"foreignKey:UserId;references:ID;constraint:OnDelete:CASCADE"`
 }
 
 type OrderUser struct {
 	UserId      uint    `gorm:"index" json:"-"`
-	NumberOrder int     `gorm:"unique" json:"order"`
+	NumberOrder string  `gorm:"unique" json:"order"`
 	Status      string  `gorm:"DEFAULT:NEW"`
-	Accrual     float32 `json:"Accrual,omitempty"`
+	Accrual     float32 `json:"accrual,omitempty"`
+	Sum         float32 `json:"sum,omitempty"`
 	Model
 }
 
 type BalanceUser struct {
-	current   float32
-	withdrawn float32
-	Model
+	ID        uint `gorm:"primary_key" json:"-"`
+	UserId    uint `gorm:"unique index" json:"-"`
+	Current   float32
+	Withdrawn float32
+	CreatedAt time.Time      `gorm:"uploaded_at" json:"-"`
+	UpdatedAt time.Time      `gorm:"processed_at" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+type OrderWithdrawalsUserJSON struct {
+	UserId      uint           `json:"-"`
+	NumberOrder string         `json:"order"`
+	Status      string         `json:"-"`
+	Accrual     float32        `json:"-"`
+	Sum         float32        `json:"sum"`
+	CreatedAt   time.Time      `json:"-"`
+	UpdatedAt   time.Time      `json:"processed_at"`
+	DeletedAt   gorm.DeletedAt `json:"-"`
 }
 
 // Для пакета user
 type UserCred struct {
-	Id       int64  `gorm:"primary_key" json:"id"`
+	Id       uint   `gorm:"primary_key" json:"id"`
 	Login    string `gorm:"unique" json:"login"`
 	Password string `json:"password"`
 }
 
 // Для пакета jwt
 
-// Для пакета
+// Для пакета handlers
+
+type OrderForPoints struct {
+	NumberOrder string  `json:"order"`
+	Sum         float32 `json:"sum"`
+}
 
 // Для пакета
 

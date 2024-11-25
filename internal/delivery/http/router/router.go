@@ -25,7 +25,7 @@ func SetapRouter() *chi.Mux {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.VerificationJWT)
 
-			r.Post("/api/user/orders", handlers.AddOrderNumber)                        //загрузка пользователем номера заказа для расчёта
+			r.Post("/api/user/orders", handlers.AddOrder)                              //загрузка пользователем номера заказа для расчёта
 			r.Post("/api/user/balance/withdraw", handlers.ExpenditurePointsOnNewOrder) //запрос на списание баллов с накопительного счёта в счёт оплаты нового заказа
 			r.Get("/api/user/orders", handlers.ListUserOrders)                         //получение списка загруженных пользователем номеров заказов, статусов их обработки и информации о начислениях
 			r.Get("/api/user/balance", handlers.ListUserBalance)                       //получение текущего баланса счёта баллов лояльности пользователя

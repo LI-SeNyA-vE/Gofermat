@@ -48,15 +48,8 @@ func ConnectToDataBase(dataBase ...string) (*gorm.DB, error) {
 	} else {
 		nameDataBase = dataBase[0]
 	}
-	connectBD := fmt.Sprintf("host=%s dbname=%s port=%s user=%s password=%s sslmode=disable",
-		global.Config.DataBase.Host,
-		nameDataBase,
-		global.Config.DataBase.Port,
-		global.Config.DataBase.User,
-		global.Config.DataBase.Password,
-	)
 
-	db, err := gorm.Open(postgres.Open(connectBD), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(global.Config.Flags.DatabaseURI), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 
@@ -113,10 +106,12 @@ func StartStorage() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = gormDB.AutoMigrate(global.UserCredInDataBase{}, global.OrderUser{})
+	err = gormDB.AutoMigrate(global.UserCredInDataBase{}, global.OrderUser{}, global.BalanceUser{})
 	if err != nil {
-		global.Logger.Infof("ошибка %v при создании таблицы userCredInDataBase", err) //ошибка на миграции базы
+		global.Logger.Infof("ошибка %v при создании таблиц", err) //ошибка на миграции базы
 	}
+
+	//err = gormDB.Unscoped().Delete(&global.UserCredInDataBase{}, 2).Error //Это удаление строк в таблице
 
 	global.Logger.Infof("Подключение к базе данных установлено")
 	return gormDB, nil
@@ -137,7 +132,7 @@ func searchUserIBase(gormDB *gorm.DB, login string) (user *global.UserCredInData
 // searchOrderIBase делает поиск в таблице пользователя с переданным логином
 // если ошибка order!=nil и errors.Is(err, gorm.ErrRecordNotFound), значит заказ с таким номером ещё не загружали
 // если order!=nil значит такой заказ уже есть в базе
-func searchOrderIBase(gormDB *gorm.DB, numberOrder int) (order *global.OrderUser, err error) {
+func searchOrderIBase(gormDB *gorm.DB, numberOrder string) (order *global.OrderUser, err error) {
 	err = gormDB.Where("number_order = ?", numberOrder).First(&order).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -175,6 +170,11 @@ func RegistrationUser(userCred *global.UserCred) (jwt string, statusCode int, er
 	}
 
 	gormDB.Create(&userCredInDataBase)
+	gormDB.Create(&global.BalanceUser{
+		UserId:    userCredInDataBase.ID,
+		Current:   0,
+		Withdrawn: 0,
+	})
 
 	token, err = CreateNewToken(userCred.Login)
 	if err != nil {
@@ -252,6 +252,85 @@ func GetListUserOrders(userId uint) (userOrder []global.OrderUser, statusCode in
 	return userOrder, 500, nil
 }
 
-func GetUserBalance(userLogin string) (userBalance []global.BalanceUser, statusCode int, err error) {
-	return nil, 500, err
+func GetUserBalance(userId uint) (userBalance global.BalanceUser, statusCode int, err error) {
+	gormDB, err := ConnectToDataBase()
+	if err != nil {
+		return global.BalanceUser{}, http.StatusInternalServerError, fmt.Errorf("ошибка подключения к базе данных: %v", err)
+	}
+
+	err = gormDB.Where("user_id = ?", userId).First(&userBalance).Error
+	if err != nil {
+		return global.BalanceUser{}, http.StatusInternalServerError, fmt.Errorf("ошибка при получение баланса пользователя из табилцы %v", err)
+	}
+	return userBalance, 200, err
+}
+
+func DebtSumFromBalanceAndCreateOrders(orderForPoints global.OrderForPoints, userId uint) (statusCode int, err error) {
+	var orderUser = global.OrderUser{
+		UserId:      userId,
+		NumberOrder: orderForPoints.NumberOrder,
+		Status:      "",
+		Accrual:     0,
+		Sum:         orderForPoints.Sum,
+		Model:       global.Model{},
+	}
+
+	gormDB, err := ConnectToDataBase()
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("ошибка подключения к базе данных: %v", err)
+	}
+
+	balance, statusCode, err := GetUserBalance(userId)
+	if err != nil {
+		return statusCode, fmt.Errorf("на этапе получения данных из базы произошла ошибка %v", err)
+	}
+
+	balance.Current -= orderForPoints.Sum
+	balance.Withdrawn += orderForPoints.Sum
+
+	if err = gormDB.Save(&balance).Error; err != nil {
+		return 500, fmt.Errorf("ошибка при обновлении баланса: %w", err)
+	}
+
+	statusCode, err = UploadingNumberOrder(orderUser)
+	if err != nil {
+		return statusCode, err
+	}
+
+	return statusCode, nil
+}
+
+func GetOrdersWithdrawal(userId uint) (usersOrder []global.OrderUser, statusCode int, err error) {
+	gormDB, err := ConnectToDataBase()
+	if err != nil {
+		return nil, http.StatusInternalServerError, fmt.Errorf("ошибка подключения к базе данных: %v", err)
+	}
+
+	err = gormDB.Where("user_id = ? AND sum IS NOT NULL AND sum != 0", userId).Find(&usersOrder).Error
+	if err != nil {
+		return nil, http.StatusInternalServerError, fmt.Errorf("ошибка получения данных из таблицы: %v", err)
+	}
+	if len(usersOrder) == 0 {
+		return nil, 204, nil
+	}
+
+	return usersOrder, 200, nil
+}
+
+func UpdateOrder(orderFromAccrualSystem global.OrderWithdrawalsUserJSON) error {
+	gormDB, err := ConnectToDataBase()
+	if err != nil {
+		return err
+	}
+
+	if err := gormDB.Model(global.OrderUser{}).
+		Where("number_order = ?", orderFromAccrualSystem.NumberOrder).
+		Updates(map[string]interface{}{
+			"status":  orderFromAccrualSystem.Status,
+			"accrual": orderFromAccrualSystem.Accrual,
+		}).Error; err != nil {
+		return fmt.Errorf("ошибка при обновлении нескольких полей: %w", err)
+	}
+	return nil
+
 }

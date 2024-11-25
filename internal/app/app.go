@@ -30,8 +30,8 @@ func Run(configPath string) {
 }
 
 func startServer(r *chi.Mux) {
-	global.Logger.Info("Открыт сервер localhost:8080")
-	err := http.ListenAndServe("localhost:8080", r)
+	global.Logger.Infof("Открыт сервер %s", global.Config.Flags.RunAddress)
+	err := http.ListenAndServe(global.Config.Flags.RunAddress, r)
 	if err != nil {
 		panic(err)
 	}

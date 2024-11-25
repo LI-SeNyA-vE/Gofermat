@@ -7,6 +7,7 @@ import (
 	"github.com/LI-SeNyA-vE/Gofermat/internal/global"
 	"github.com/LI-SeNyA-vE/Gofermat/internal/service"
 	"net/http"
+	"strings"
 )
 
 func UserRegistration(writer http.ResponseWriter, request *http.Request) {
@@ -81,10 +82,10 @@ func UserAuthentication(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 }
 
-func AddOrderNumber(writer http.ResponseWriter, request *http.Request) {
+func AddOrder(writer http.ResponseWriter, request *http.Request) {
 	var (
 		buf         bytes.Buffer
-		numberOrder int
+		numberOrder string
 	)
 
 	if request.Header.Get("Content-Type") != "text/plain" {
@@ -100,12 +101,7 @@ func AddOrderNumber(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	err = json.Unmarshal(buf.Bytes(), &numberOrder) // Разбирает данные из массива byte в структуру
-	if err != nil {
-		global.Logger.Info("в заказе присутствуют другие символы кроме цифр")
-		http.Error(writer, fmt.Sprintf("в заказе присутствуют другие символы кроме цифр %v", err), http.StatusUnprocessableEntity)
-		return
-	}
+	numberOrder = strings.TrimSpace(buf.String())
 
 	statusCode, err := service.UserUploadingNumberOrder(request.Header.Get("Authorization"), numberOrder)
 	if err != nil {
@@ -113,10 +109,45 @@ func AddOrderNumber(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, err.Error(), statusCode)
 		return
 	}
+
 	writer.WriteHeader(statusCode)
 }
 
 func ExpenditurePointsOnNewOrder(writer http.ResponseWriter, request *http.Request) {
+	var (
+		buf             bytes.Buffer
+		userCredentials global.OrderForPoints
+	)
+
+	if request.Header.Get("Content-Type") != "application/json" {
+		global.Logger.Info("неверный формат запроса")
+		http.Error(writer, fmt.Sprint("неверный формат запроса"), http.StatusBadRequest)
+		return
+	}
+
+	_, err := buf.ReadFrom(request.Body) //Читает данные из тела запроса
+	if err != nil {
+		global.Logger.Info("ошибка при чтении данных из Body")
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.Unmarshal(buf.Bytes(), &userCredentials) // Разбирает данные из массива byte в структуру
+	if err != nil {
+		global.Logger.Info("неверный формат данных")
+		http.Error(writer, fmt.Sprintf("неверный формат данных"), http.StatusBadRequest)
+		return
+	}
+
+	statusCode, err := service.UserNewOrderForPoints(userCredentials, request.Header.Get("Authorization"))
+	if err != nil {
+		global.Logger.Info("ошибка при выполнение функции UserNewOrderForPoints")
+		http.Error(writer, err.Error(), statusCode)
+		return
+	}
+
+	writer.WriteHeader(statusCode)
+	request.Header.Get("Заказ успешно зарегистрирован и списаны баллы")
 
 }
 
@@ -153,5 +184,26 @@ func ListUserBalance(writer http.ResponseWriter, request *http.Request) {
 }
 
 func InfoAboutUsagePoints(writer http.ResponseWriter, request *http.Request) {
+	if request.Header.Get("Content-Length") != "0" {
+		http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
+		return
+	}
 
+	usersOrder, statusCode, err := service.OrdersPaidPoints(request.Header.Get("Authorization"))
+	if err != nil {
+		global.Logger.Infof("ошибка на этапе получения информации о выводе стредств %s", err)
+		http.Error(writer, err.Error(), statusCode)
+		return
+	}
+
+	marshal, err := json.Marshal(usersOrder)
+	if err != nil {
+		global.Logger.Infof("на этапе маршла данных произошла ошибка %s", err)
+		http.Error(writer, fmt.Errorf("на этапе маршла данных произошла ошибка %v", err).Error(), 500)
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(statusCode)
+	writer.Write(marshal)
+	request.Header.Get("Заказ успешно зарегистрирован и списаны баллы")
 }
