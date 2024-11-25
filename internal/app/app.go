@@ -11,7 +11,7 @@ import (
 
 func Run(configPath string) {
 	//инициализация Логера
-	config.Start("/Users/senya/GolandProjects/Gofermat/config.yml")
+	config.Start(configPath)
 	gormDB, err := service.Start()
 	defer func() {
 		sqlDB, _ := gormDB.DB()

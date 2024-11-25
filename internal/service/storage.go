@@ -10,7 +10,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
 	"net/http"
 )
 
@@ -42,19 +41,13 @@ func SearchForUserById(userLogin string) (userId uint, statusCode int, err error
 // ConnectToDataBase Служит для подключения к базе
 // Если нет передаваемого значения, то по умолчанию идёт подключения к postgres
 func ConnectToDataBase(dataBase ...string) (*gorm.DB, error) {
-	var nameDataBase string
-	if len(dataBase) == 0 {
-		nameDataBase = global.Config.DataBase.NameDataBase
-	} else {
-		nameDataBase = dataBase[0]
-	}
 
 	db, err := gorm.Open(postgres.Open(global.Config.Flags.DatabaseURI), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 
 	if err != nil {
-		global.Logger.Infof("Ошибка подключения к базе данных%s: %v", nameDataBase, err)
+		global.Logger.Infof("Ошибка подключения к базе данных: %v", err)
 		return nil, err
 	}
 	return db, nil
@@ -93,10 +86,10 @@ func CreateDataBaseIfNotExists() error {
 // StartStorage использоваться при запуске программы и передаёт обратно переменную для подключения
 func StartStorage() (*gorm.DB, error) {
 	// Создаём базу данных, если она отсутствует
-	if err := CreateDataBaseIfNotExists(); err != nil {
-		log.Fatalf("Ошибка при создании базы данных: %v", err)
-		return nil, err
-	}
+	//if err := CreateDataBaseIfNotExists(); err != nil {
+	//	log.Fatalf("Ошибка при создании базы данных: %v", err)
+	//	return nil, err
+	//}
 
 	// Подключаемся к базе данных
 	gormDB, err := ConnectToDataBase()
