@@ -63,7 +63,9 @@ func UserUploadingNumberOrder(jwt string, orderNumber string) (statusCode int, e
 	var orderUser = global.OrderUser{UserId: userId, NumberOrder: orderNumber}
 	statusCode, err = UploadingNumberOrder(orderUser)
 
-	go sendOrderToAPI(orderUser.NumberOrder)
+	if statusCode != http.StatusOK && statusCode != http.StatusConflict {
+		go sendOrderToAPI(orderUser.NumberOrder)
+	}
 
 	return statusCode, err
 }
@@ -115,20 +117,22 @@ func sendOrderToAPI(numberOrder string) {
 		// Проверяем статус ответа
 		switch resp.StatusCode {
 		case http.StatusOK:
+			global.Logger.Infof("resp.StatusCode = http.StatusOK в системе лояльности")
 		case http.StatusNoContent:
+			global.Logger.Infof("resp.StatusCode = http.StatusNoContent в системе лояльности")
 			time.Sleep(10 * time.Second)
 			continue
 		case http.StatusInternalServerError:
+			global.Logger.Infof("resp.StatusCode = http.StatusInternalServerError в системе лояльности")
 			time.Sleep(10 * time.Second)
 			continue
 		case http.StatusTooManyRequests:
 			timeSlip := resp.Header.Get("Retry-After")
 			intTimeSlip, _ := strconv.Atoi(timeSlip)
+			global.Logger.Infof("resp.StatusCode = http.StatusInternalServerError в системе лояльности\bпревышено колличество запросов, подождите %v", intTimeSlip)
 			time.Sleep(time.Duration(intTimeSlip) * time.Second)
 			continue
 		}
-
-		global.Logger.Infof("resp.StatusCode = http.StatusOK в системе лояльности")
 
 		// Читаем тело ответа
 		body, err := io.ReadAll(resp.Body)
