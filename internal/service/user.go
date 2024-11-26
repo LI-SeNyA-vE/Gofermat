@@ -112,7 +112,7 @@ func sendOrderToAPI(numberOrder string) {
 		return
 	}
 
-	var orderFromAccrualSystem global.OrderWithdrawalsUserJSON
+	var orderFromAccrualSystem global.OrderUser
 
 	test := string(body)
 	global.Logger.Infof("test = %s", test)

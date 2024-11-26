@@ -310,7 +310,7 @@ func GetOrdersWithdrawal(userId uint) (usersOrder []global.OrderUser, statusCode
 	return usersOrder, 200, nil
 }
 
-func UpdateOrder(orderFromAccrualSystem global.OrderWithdrawalsUserJSON) error {
+func UpdateOrder(orderFromAccrualSystem global.OrderUser) error {
 	gormDB, err := ConnectToDataBase()
 	if err != nil {
 		return err
