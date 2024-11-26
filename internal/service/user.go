@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"unicode"
 )
 
 func CreateUser(userCred global.UserCred) (token string, statusCode int, err error) {
@@ -22,13 +23,14 @@ func UserAuthentication(userCred global.UserCred) (token string, statusCode int,
 func LunaAlgorithm(orderNumber string) (statusCode int, err error) {
 	var sum int
 	var double = false
-	_, err = strconv.Atoi(orderNumber)
-	if err != nil {
-		return http.StatusUnprocessableEntity, fmt.Errorf("введены не только цифры %s", err)
+	if len(orderNumber) == 0 {
+		return http.StatusUnprocessableEntity, fmt.Errorf("номер заказа не прошёл проверку по алгоритму \"Луна\" %w", err)
 	}
 	for i := len(orderNumber) - 1; i >= 0; i-- {
 		r := rune(orderNumber[i])
-
+		if !unicode.IsDigit(r) {
+			return http.StatusUnprocessableEntity, fmt.Errorf("введены не только цифры %s", err)
+		}
 		digit, _ := strconv.Atoi(string(r))
 
 		if double {
@@ -106,6 +108,7 @@ func sendOrderToAPI(numberOrder string) {
 	resp, err := http.Get(url)
 	if err != nil {
 		global.Logger.Infof("Ошибка запроса: %v.  К системе лояльности...\n", err)
+		return
 	}
 
 	defer resp.Body.Close()
