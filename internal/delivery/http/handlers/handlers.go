@@ -211,13 +211,13 @@ func ListUserBalance(writer http.ResponseWriter, request *http.Request) {
 	global.Logger.Info("провалились в функцию ListUserOrders")
 
 	contentLength := request.Header.Get("Content-Length")
-	if contentLength != "0" {
-		global.Logger.Info("в handler balance contentLength не равен 0")
-		http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
-		return
-	}
+	//if contentLength != "0"{
+	//	global.Logger.Info("в handler balance contentLength не равен 0")
+	//	http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
+	//	return
+	//}
 
-	global.Logger.Info("в ListUserBalance проверили на заголовок Content-Length на равенство 0, он равен 0")
+	global.Logger.Infof("в ListUserBalance проверили на заголовок Content-Length на равенство 0, он равен %v", contentLength)
 
 	authHeader := request.Header.Get("Authorization")
 	token := strings.TrimPrefix(authHeader, "Bearer ")
