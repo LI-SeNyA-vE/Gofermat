@@ -114,12 +114,14 @@ func sendOrderToAPI(numberOrder string) {
 
 		// Проверяем статус ответа
 		if resp.StatusCode != http.StatusOK {
+			global.Logger.Infof("resp.StatusCode != http.StatusOK в системе лояльности")
 			continue
 		}
 
 		// Читаем тело ответа
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
+			global.Logger.Infof("Ошибка при чтение ответа в системе лояльности, %v", err)
 			return
 		}
 
@@ -127,6 +129,7 @@ func sendOrderToAPI(numberOrder string) {
 
 		err = json.Unmarshal(body, &orderFromAccrualSystem)
 		if err != nil {
+			global.Logger.Infof("Ошибка при разбре body в orderFromAccrualSystem global.OrderWithdrawalsUserJSON в системе лояльности, %v", err)
 			return
 		}
 
