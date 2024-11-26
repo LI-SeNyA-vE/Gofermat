@@ -227,7 +227,7 @@ func UploadingNumberOrder(orderUser global.OrderUser) (statusCode int, err error
 	}
 	gormDB.Create(&orderUser)
 
-	return http.StatusAccepted, nil
+	return http.StatusOK, nil
 }
 
 func GetListUserOrders(userId uint) (userOrder []global.OrderUser, statusCode int, err error) {
