@@ -203,8 +203,8 @@ func ListUserOrders(writer http.ResponseWriter, request *http.Request) {
 	global.Logger.Info("прошли функцию UserListUserOrders в  handler ListUserOrders")
 
 	writer.Header().Set("Content-Type", "application/json")
-	writer.Write(ordersJSON)
 	writer.WriteHeader(http.StatusOK)
+	writer.Write(ordersJSON)
 }
 
 func ListUserBalance(writer http.ResponseWriter, request *http.Request) {
@@ -232,8 +232,8 @@ func ListUserBalance(writer http.ResponseWriter, request *http.Request) {
 	global.Logger.Info("в handler ListUserBalance прошли функцию UserListUserBalance")
 
 	writer.Header().Set("Content-Type", "application/json")
-	writer.Write(balanceJSON)
 	writer.WriteHeader(http.StatusOK)
+	writer.Write(balanceJSON)
 }
 
 func InfoAboutUsagePoints(writer http.ResponseWriter, request *http.Request) {
