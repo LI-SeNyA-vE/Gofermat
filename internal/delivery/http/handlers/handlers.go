@@ -239,11 +239,11 @@ func ListUserBalance(writer http.ResponseWriter, request *http.Request) {
 func InfoAboutUsagePoints(writer http.ResponseWriter, request *http.Request) {
 	global.Logger.Info("провалились в функцию ListUserOrders")
 
-	if request.Header.Get("Content-Length") != "0" {
-		global.Logger.Info("в InfoAboutUsagePoints, Content-Length неравен 0")
-		http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
-		return
-	}
+	//if request.Header.Get("Content-Length") != "0" {
+	//	global.Logger.Info("в InfoAboutUsagePoints, Content-Length неравен 0")
+	//	http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
+	//	return
+	//}
 
 	global.Logger.Info("в InfoAboutUsagePoints проверили на заголовок Content-Length на равенство 0, он равен 0")
 
