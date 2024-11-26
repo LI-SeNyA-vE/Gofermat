@@ -310,20 +310,31 @@ func GetOrdersWithdrawal(userId uint) (usersOrder []global.OrderUser, statusCode
 	return usersOrder, 200, nil
 }
 
-func UpdateOrder(orderFromAccrualSystem global.OrderUser) error {
+func UpdateOrderAndBalance(orderFromAccrualSystem global.OrderUser) error {
 	gormDB, err := ConnectToDataBase()
 	if err != nil {
 		return err
 	}
 
-	if err = gormDB.Model(global.OrderUser{}).
+	var order global.OrderUser
+
+	if err = gormDB.Model(order).
 		Where("number_order = ?", orderFromAccrualSystem.NumberOrder).
 		Updates(map[string]interface{}{
 			"status":  orderFromAccrualSystem.Status,
 			"accrual": orderFromAccrualSystem.Accrual,
+		}).First(&order).Error; err != nil {
+		return fmt.Errorf("ошибка при обновлении нескольких полей: %w", err)
+	}
+
+	if err = gormDB.Model(global.BalanceUser{}).
+		Where("user_id = ?", order.UserId).
+		Updates(map[string]interface{}{
+			"current": order.Accrual,
 		}).Error; err != nil {
 		return fmt.Errorf("ошибка при обновлении нескольких полей: %w", err)
 	}
+
 	return nil
 
 }
