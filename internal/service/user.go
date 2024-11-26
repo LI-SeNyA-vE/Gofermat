@@ -112,11 +112,11 @@ func sendOrderToAPI(numberOrder string) {
 
 		defer resp.Body.Close()
 
-		// Проверяем статус ответа
-		if resp.StatusCode != http.StatusOK {
-			global.Logger.Infof("resp.StatusCode != http.StatusOK в системе лояльности")
-			continue
-		}
+		//// Проверяем статус ответа
+		//if resp.StatusCode != http.StatusOK {
+		//	global.Logger.Infof("resp.StatusCode != http.StatusOK в системе лояльности")
+		//	continue
+		//}
 
 		// Читаем тело ответа
 		body, err := io.ReadAll(resp.Body)
