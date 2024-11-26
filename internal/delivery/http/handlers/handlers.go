@@ -182,11 +182,11 @@ func ExpenditurePointsOnNewOrder(writer http.ResponseWriter, request *http.Reque
 func ListUserOrders(writer http.ResponseWriter, request *http.Request) {
 	global.Logger.Info("провалились в функцию ListUserOrders")
 
-	if request.Header.Get("Content-Length") != "0" || request.Header.Get("Content-Length") != "" {
-		global.Logger.Info("в ListUserOrders Content-Length неравен 0 или не пустой")
-		http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
-		return
-	}
+	//if request.Header.Get("Content-Length") != "0" || request.Header.Get("Content-Length") != "" {
+	//	global.Logger.Info("в ListUserOrders Content-Length неравен 0 или не пустой")
+	//	http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
+	//	return
+	//}
 
 	global.Logger.Info("в ListUserOrders проверили на заголовок Content-Length на равенство 0, он равен 0")
 
