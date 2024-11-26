@@ -316,7 +316,7 @@ func UpdateOrder(orderFromAccrualSystem global.OrderWithdrawalsUserJSON) error {
 		return err
 	}
 
-	if err := gormDB.Model(global.OrderUser{}).
+	if err = gormDB.Model(global.OrderUser{}).
 		Where("number_order = ?", orderFromAccrualSystem.NumberOrder).
 		Updates(map[string]interface{}{
 			"status":  orderFromAccrualSystem.Status,

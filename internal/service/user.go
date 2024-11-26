@@ -132,8 +132,12 @@ func sendOrderToAPI(numberOrder string) {
 
 		err = UpdateOrder(orderFromAccrualSystem)
 		if err != nil {
+			global.Logger.Infof("Ошибка при записи в базу в системе лояльности, %v", err)
 			return
 		}
+
+		global.Logger.Infof("обратились к системе лояльности %v", orderFromAccrualSystem)
+
 		break
 	}
 }
