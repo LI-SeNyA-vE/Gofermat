@@ -112,11 +112,23 @@ func sendOrderToAPI(numberOrder string) {
 
 		defer resp.Body.Close()
 
-		//// Проверяем статус ответа
-		//if resp.StatusCode != http.StatusOK {
-		//	global.Logger.Infof("resp.StatusCode != http.StatusOK в системе лояльности")
-		//	continue
-		//}
+		// Проверяем статус ответа
+		switch resp.StatusCode {
+		case http.StatusOK:
+		case http.StatusNoContent:
+			time.Sleep(10 * time.Second)
+			continue
+		case http.StatusInternalServerError:
+			time.Sleep(10 * time.Second)
+			continue
+		case http.StatusTooManyRequests:
+			timeSlip := resp.Header.Get("Retry-After")
+			intTimeSlip, _ := strconv.Atoi(timeSlip)
+			time.Sleep(time.Duration(intTimeSlip) * time.Second)
+			continue
+		}
+
+		global.Logger.Infof("resp.StatusCode = http.StatusOK в системе лояльности")
 
 		// Читаем тело ответа
 		body, err := io.ReadAll(resp.Body)
