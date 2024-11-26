@@ -18,6 +18,8 @@ func SetapRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.LoggingMiddleware)
+		r.Use(middleware.GzipMiddleware)
+		r.Use(middleware.UnGzipMiddleware)
 
 		r.Post("/api/user/register", handlers.UserRegistration) //регистрация пользователя
 		r.Post("/api/user/login", handlers.UserAuthentication)  //аутентификация пользователя
