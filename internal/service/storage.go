@@ -262,7 +262,7 @@ func DebtSumFromBalanceAndCreateOrders(orderForPoints global.OrderForPoints, use
 	var orderUser = global.OrderUser{
 		UserId:      userId,
 		NumberOrder: orderForPoints.NumberOrder,
-		Status:      "",
+		Status:      "PROCESSED",
 		Accrual:     0,
 		Sum:         orderForPoints.Sum,
 		Model:       global.Model{},
