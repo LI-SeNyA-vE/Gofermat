@@ -227,7 +227,7 @@ func UploadingNumberOrder(orderUser global.OrderUser) (statusCode int, err error
 	}
 	gormDB.Create(&orderUser)
 
-	return http.StatusOK, nil
+	return http.StatusAccepted, nil
 }
 
 func GetListUserOrders(userId uint) (userOrder []global.OrderUser, statusCode int, err error) {
@@ -285,12 +285,9 @@ func DebtSumFromBalanceAndCreateOrders(orderForPoints global.OrderForPoints, use
 		return 500, fmt.Errorf("ошибка при обновлении баланса: %w", err)
 	}
 
-	statusCode, err = UploadingNumberOrder(orderUser)
-	if err != nil {
-		return statusCode, err
-	}
+	gormDB.Create(&orderUser)
 
-	return statusCode, nil
+	return http.StatusOK, nil
 }
 
 func GetOrdersWithdrawal(userId uint) (usersOrder []global.OrderUser, statusCode int, err error) {
