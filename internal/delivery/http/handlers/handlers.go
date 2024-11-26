@@ -101,9 +101,13 @@ func AddOrder(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	numberOrder = strings.TrimSpace(buf.String())
+	numberOrder = buf.String()
+	global.Logger.Infof("заказ № %s", numberOrder)
 
-	statusCode, err := service.UserUploadingNumberOrder(request.Header.Get("Authorization"), numberOrder)
+	authHeader := request.Header.Get("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	global.Logger.Infof("токен передающийся в функцию = %s", token)
+	statusCode, err := service.UserUploadingNumberOrder(token, numberOrder)
 	if err != nil {
 		global.Logger.Infof("ошибка на этапе загрузки пользователем заказа %s", err)
 		http.Error(writer, err.Error(), statusCode)
@@ -139,7 +143,10 @@ func ExpenditurePointsOnNewOrder(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	statusCode, err := service.UserNewOrderForPoints(userCredentials, request.Header.Get("Authorization"))
+	authHeader := request.Header.Get("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	global.Logger.Infof("токен передающийся в функцию = %s", token)
+	statusCode, err := service.UserNewOrderForPoints(userCredentials, token)
 	if err != nil {
 		global.Logger.Info("ошибка при выполнение функции UserNewOrderForPoints")
 		http.Error(writer, err.Error(), statusCode)
@@ -156,7 +163,11 @@ func ListUserOrders(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
 		return
 	}
-	ordersJSON, statusCode, err := service.UserListUserOrders(request.Header.Get("Authorization"))
+
+	authHeader := request.Header.Get("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	global.Logger.Infof("токен передающийся в функцию = %s", token)
+	ordersJSON, statusCode, err := service.UserListUserOrders(token)
 	if err != nil {
 		global.Logger.Infof("ошибка на этапе выгрузке заказов пользователя %s", err)
 		http.Error(writer, err.Error(), statusCode)
@@ -172,7 +183,11 @@ func ListUserBalance(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
 		return
 	}
-	balanceJSON, statusCode, err := service.UserListUserBalance(request.Header.Get("Authorization"))
+
+	authHeader := request.Header.Get("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	global.Logger.Infof("токен передающийся в функцию = %s", token)
+	balanceJSON, statusCode, err := service.UserListUserBalance(token)
 	if err != nil {
 		global.Logger.Infof("ошибка на этапе выгрузке баланса пользователя %s", err)
 		http.Error(writer, err.Error(), statusCode)
@@ -189,7 +204,10 @@ func InfoAboutUsagePoints(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	usersOrder, statusCode, err := service.OrdersPaidPoints(request.Header.Get("Authorization"))
+	authHeader := request.Header.Get("Authorization")
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	global.Logger.Infof("токен передающийся в функцию = %s", token)
+	usersOrder, statusCode, err := service.OrdersPaidPoints(token)
 	if err != nil {
 		global.Logger.Infof("ошибка на этапе получения информации о выводе стредств %s", err)
 		http.Error(writer, err.Error(), statusCode)

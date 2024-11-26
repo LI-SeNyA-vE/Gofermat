@@ -25,7 +25,7 @@ func LunaAlgorithm(orderNumber string) (statusCode int, err error) {
 	var double = false
 	_, err = strconv.Atoi(orderNumber)
 	if err != nil {
-		return 422, fmt.Errorf("введены не только цифры %s", err)
+		return http.StatusUnprocessableEntity, fmt.Errorf("введены не только цифры %s", err)
 	}
 	for i := len(orderNumber) - 1; i >= 0; i-- {
 		r := rune(orderNumber[i])
