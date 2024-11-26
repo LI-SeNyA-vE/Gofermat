@@ -77,28 +77,6 @@ type OrderResponse struct {
 	Accrual float64 `json:"accrual"`
 }
 
-func testSendOrderToAPI(numberOrder string) {
-	http.HandleFunc("/api/orders/", func(w http.ResponseWriter, r *http.Request) {
-		// Извлекаем номер заказа из URL
-		orderNumber := r.URL.Path[len("/api/orders/"):]
-
-		// Формируем фиксированный ответ
-		response := OrderResponse{
-			Order:   orderNumber,
-			Status:  "PROCESSED",
-			Accrual: 500,
-		}
-
-		// Устанавливаем заголовок Content-Type
-		w.Header().Set("Content-Type", "application/json")
-
-		// Возвращаем JSON-ответ
-		err := json.NewEncoder(w).Encode(response)
-		if err != nil {
-			http.Error(w, "Ошибка при формировании ответа", http.StatusInternalServerError)
-		}
-	})
-}
 func sendOrderToAPI(numberOrder string) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/orders/%s", global.Config.Flags.AccrualSystemAddress, numberOrder)
@@ -135,6 +113,9 @@ func sendOrderToAPI(numberOrder string) {
 	}
 
 	var orderFromAccrualSystem global.OrderWithdrawalsUserJSON
+
+	test := string(body)
+	global.Logger.Infof("test = %s", test)
 
 	err = json.Unmarshal(body, &orderFromAccrualSystem)
 	if err != nil {
