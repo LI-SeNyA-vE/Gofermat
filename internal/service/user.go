@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 func CreateUser(userCred global.UserCred) (token string, statusCode int, err error) {
@@ -103,62 +102,50 @@ func sendOrderToAPI(numberOrder string) {
 	url := fmt.Sprintf("%s/api/orders/%s", global.Config.Flags.AccrualSystemAddress, numberOrder)
 	global.Logger.Infof("url = %s", url)
 
-	for {
-		// Отправляем GET-запрос
-		resp, err := http.Get(url)
-		if err != nil {
-			global.Logger.Infof("Ошибка запроса: %v. Повтор через 10 секунд...\n", err)
-			time.Sleep(10 * time.Second)
-			continue
-		}
-
-		defer resp.Body.Close()
-
-		// Проверяем статус ответа
-		switch resp.StatusCode {
-		case http.StatusOK:
-			global.Logger.Infof("resp.StatusCode = http.StatusOK в системе лояльности")
-		case http.StatusNoContent:
-			global.Logger.Infof("resp.StatusCode = http.StatusNoContent в системе лояльности")
-			time.Sleep(10 * time.Second)
-			continue
-		case http.StatusInternalServerError:
-			global.Logger.Infof("resp.StatusCode = http.StatusInternalServerError в системе лояльности")
-			time.Sleep(10 * time.Second)
-			continue
-		case http.StatusTooManyRequests:
-			timeSlip := resp.Header.Get("Retry-After")
-			intTimeSlip, _ := strconv.Atoi(timeSlip)
-			global.Logger.Infof("resp.StatusCode = http.StatusInternalServerError в системе лояльности\bпревышено колличество запросов, подождите %v", intTimeSlip)
-			time.Sleep(time.Duration(intTimeSlip) * time.Second)
-			continue
-		}
-
-		// Читаем тело ответа
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			global.Logger.Infof("Ошибка при чтение ответа в системе лояльности, %v", err)
-			return
-		}
-
-		var orderFromAccrualSystem global.OrderWithdrawalsUserJSON
-
-		err = json.Unmarshal(body, &orderFromAccrualSystem)
-		if err != nil {
-			global.Logger.Infof("Ошибка при разбре body в orderFromAccrualSystem global.OrderWithdrawalsUserJSON в системе лояльности, %v", err)
-			return
-		}
-
-		err = UpdateOrder(orderFromAccrualSystem)
-		if err != nil {
-			global.Logger.Infof("Ошибка при записи в базу в системе лояльности, %v", err)
-			return
-		}
-
-		global.Logger.Infof("обратились к системе лояльности %v", orderFromAccrualSystem)
-
-		break
+	// Отправляем GET-запрос
+	resp, err := http.Get(url)
+	if err != nil {
+		global.Logger.Infof("Ошибка запроса: %v.  К системе лояльности...\n", err)
 	}
+
+	defer resp.Body.Close()
+
+	// Проверяем статус ответа
+	switch resp.StatusCode {
+	case http.StatusOK:
+		global.Logger.Infof("resp.StatusCode = http.StatusOK в системе лояльности")
+	case http.StatusNoContent:
+		global.Logger.Infof("resp.StatusCode = http.StatusNoContent в системе лояльности")
+	case http.StatusInternalServerError:
+		global.Logger.Infof("resp.StatusCode = http.StatusInternalServerError в системе лояльности")
+	case http.StatusTooManyRequests:
+		timeSlip := resp.Header.Get("Retry-After")
+		intTimeSlip, _ := strconv.Atoi(timeSlip)
+		global.Logger.Infof("resp.StatusCode = http.StatusInternalServerError в системе лояльности\bпревышено колличество запросов, подождите %v", intTimeSlip)
+	}
+
+	// Читаем тело ответа
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		global.Logger.Infof("Ошибка при чтение ответа в системе лояльности, %v", err)
+		return
+	}
+
+	var orderFromAccrualSystem global.OrderWithdrawalsUserJSON
+
+	err = json.Unmarshal(body, &orderFromAccrualSystem)
+	if err != nil {
+		global.Logger.Infof("Ошибка при разбре body в orderFromAccrualSystem global.OrderWithdrawalsUserJSON в системе лояльности, %v", err)
+		return
+	}
+
+	err = UpdateOrder(orderFromAccrualSystem)
+	if err != nil {
+		global.Logger.Infof("Ошибка при записи в базу в системе лояльности, %v", err)
+		return
+	}
+
+	global.Logger.Infof("обратились к системе лояльности %v", orderFromAccrualSystem)
 }
 
 func UserListUserOrders(jwt string) (ordersJSON []byte, statusCode int, err error) {
