@@ -17,12 +17,14 @@ func VerificationJWT(next http.Handler) http.Handler {
 			global.Logger.Infof("токен = %s", authHeader)
 			_, err := service.VerificationToken(jwtToken)
 			if err != nil {
+				global.Logger.Infof("невалидный токен, ошибка: %s", err)
 				http.Error(w, fmt.Sprintf("невалидный токен, ошибка: %s", err), http.StatusUnauthorized)
 				return
 			}
 			next.ServeHTTP(w, r)
 			return
 		}
+		global.Logger.Infof("не передан токен в мидлваре")
 		http.Error(w, "не передан токен", http.StatusUnauthorized)
 		return
 	})
