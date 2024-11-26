@@ -179,7 +179,10 @@ func ListUserOrders(writer http.ResponseWriter, request *http.Request) {
 }
 
 func ListUserBalance(writer http.ResponseWriter, request *http.Request) {
-	if request.Header.Get("Content-Length") != "0" {
+	contentLength := request.Header.Get("Content-Length")
+	if contentLength != "0" {
+		global.Logger.Infof("на ручку balance contentLength = %s", contentLength)
+		global.Logger.Info("request.Header = ", request.Header)
 		http.Error(writer, "Content-Length != 0", http.StatusBadRequest)
 		return
 	}
