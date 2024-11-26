@@ -99,12 +99,13 @@ func testSendOrderToAPI(numberOrder string) {
 func sendOrderToAPI(numberOrder string) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/orders/%s", global.Config.Flags.AccrualSystemAddress, numberOrder)
+	global.Logger.Infof("url = %s", url)
 
 	for {
 		// Отправляем GET-запрос
 		resp, err := http.Get(url)
 		if err != nil {
-			fmt.Printf("Ошибка запроса: %v. Повтор через 10 секунд...\n", err)
+			global.Logger.Infof("Ошибка запроса: %v. Повтор через 10 секунд...\n", err)
 			time.Sleep(10 * time.Second)
 			continue
 		}
