@@ -133,7 +133,7 @@ func sendOrderToAPI(numberOrder string) {
 }
 
 func UserListUserOrders(jwt string) (ordersJSON []byte, statusCode int, err error) {
-	var orders []global.OrderUser
+	var orders []global.OrdersUserJSON
 	payload, _ := VerificationToken(jwt)
 	userLogin := payload["sub"].(string)
 	userId, statusCode, err := SearchForUserById(userLogin)
@@ -145,6 +145,7 @@ func UserListUserOrders(jwt string) (ordersJSON []byte, statusCode int, err erro
 	if err != nil {
 		return ordersJSON, statusCode, fmt.Errorf("на этапе получения данных из базы произошла ошибка %v", err)
 	}
+
 	ordersJSON, err = json.Marshal(orders)
 	if err != nil {
 		return ordersJSON, 500, fmt.Errorf("на этапе маршла данных произошла ошибка %v", err)

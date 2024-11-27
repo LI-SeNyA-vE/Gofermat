@@ -230,13 +230,13 @@ func UploadingNumberOrder(orderUser global.OrderUser) (statusCode int, err error
 	return http.StatusAccepted, nil
 }
 
-func GetListUserOrders(userId uint) (userOrder []global.OrderUser, statusCode int, err error) {
+func GetListUserOrders(userId uint) (userOrder []global.OrdersUserJSON, statusCode int, err error) {
 	gormDB, err := ConnectToDataBase()
 	if err != nil {
-		return []global.OrderUser{}, http.StatusInternalServerError, fmt.Errorf("ошибка подключения к базе данных: %v", err)
+		return []global.OrdersUserJSON{}, http.StatusInternalServerError, fmt.Errorf("ошибка подключения к базе данных: %v", err)
 	}
 
-	gormDB.Where("user_id = ?", userId).Find(&userOrder)
+	gormDB.Model(global.OrderUser{}).Where("user_id = ?", userId).Find(&userOrder)
 
 	if len(userOrder) == 0 {
 		return nil, http.StatusNoContent, fmt.Errorf("нет данных для ответа: %v", err)

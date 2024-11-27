@@ -52,6 +52,15 @@ type OrderUser struct {
 	Model
 }
 
+type OrdersUserJSON struct {
+	UserId      uint      `json:"-"`
+	NumberOrder string    `json:"number"`
+	Status      string    `json:"status"`
+	Accrual     float32   `json:"accrual,omitempty"`
+	Sum         float32   `json:"-"`
+	CreatedAt   time.Time `json:"uploaded_at"`
+}
+
 type BalanceUser struct {
 	ID        uint `gorm:"primary_key" json:"-"`
 	UserId    uint `gorm:"unique index" json:"-"`
