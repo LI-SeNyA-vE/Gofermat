@@ -324,6 +324,8 @@ func UpdateOrderAndBalance(orderFromAccrualSystem global.OrderUser) error {
 		return fmt.Errorf("ошибка при обновлении нескольких полей: %w", err)
 	}
 
+	global.Logger.Infof("Как записался заказ в талицу после системы лояльности: %v", order)
+
 	if err = gormDB.Model(global.BalanceUser{}).
 		Where("user_id = ?", order.UserId).
 		Updates(map[string]interface{}{
