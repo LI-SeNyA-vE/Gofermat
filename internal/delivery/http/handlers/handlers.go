@@ -18,7 +18,7 @@ func UserRegistration(writer http.ResponseWriter, request *http.Request) {
 
 	if request.Header.Get("Content-Type") != "application/json" {
 		global.Logger.Info("неверный формат запроса")
-		http.Error(writer, fmt.Sprint("неверный формат запроса"), http.StatusBadRequest)
+		http.Error(writer, "неверный формат запроса", http.StatusBadRequest)
 		return
 	}
 
@@ -32,7 +32,7 @@ func UserRegistration(writer http.ResponseWriter, request *http.Request) {
 	err = json.Unmarshal(buf.Bytes(), &userCredentials) // Разбирает данные из массива byte в структуру
 	if err != nil || userCredentials.Password == "" || userCredentials.Login == "" {
 		global.Logger.Info("неверный формат данных переданный пользователем")
-		http.Error(writer, fmt.Sprintf("неверный формат данных переданный пользователем"), http.StatusBadRequest)
+		http.Error(writer, fmt.Sprintf("неверный формат данных переданный пользователем %v", err), http.StatusBadRequest)
 		return
 	}
 
@@ -54,7 +54,7 @@ func UserAuthentication(writer http.ResponseWriter, request *http.Request) {
 
 	if request.Header.Get("Content-Type") != "application/json" {
 		global.Logger.Info("неверный формат запроса")
-		http.Error(writer, fmt.Sprint("неверный формат запроса"), http.StatusBadRequest)
+		http.Error(writer, "неверный формат запроса", http.StatusBadRequest)
 		return
 	}
 
@@ -68,7 +68,7 @@ func UserAuthentication(writer http.ResponseWriter, request *http.Request) {
 	err = json.Unmarshal(buf.Bytes(), &userCredentials) // Разбирает данные из массива byte в структуру
 	if err != nil || userCredentials.Password == "" || userCredentials.Login == "" {
 		global.Logger.Info("неверный формат данных переданный пользователем")
-		http.Error(writer, fmt.Sprintf("неверный формат данных переданный пользователем"), http.StatusBadRequest)
+		http.Error(writer, fmt.Sprintf("неверный формат данных переданный пользователем %v", err), http.StatusBadRequest)
 		return
 	}
 
@@ -92,7 +92,7 @@ func AddOrder(writer http.ResponseWriter, request *http.Request) {
 
 	if request.Header.Get("Content-Type") != "text/plain" {
 		global.Logger.Info("неверный формат запроса")
-		http.Error(writer, fmt.Sprint("неверный формат запроса"), http.StatusBadRequest)
+		http.Error(writer, "неверный формат запроса", http.StatusBadRequest)
 		return
 	}
 
@@ -138,7 +138,7 @@ func ExpenditurePointsOnNewOrder(writer http.ResponseWriter, request *http.Reque
 
 	if request.Header.Get("Content-Type") != "application/json" {
 		global.Logger.Infof("неверный формат запроса Content-Type %s", request.Header.Get("Content-Type"))
-		http.Error(writer, fmt.Sprint("неверный формат запроса"), http.StatusBadRequest)
+		http.Error(writer, "неверный формат запроса", http.StatusBadRequest)
 		return
 	}
 
@@ -156,7 +156,7 @@ func ExpenditurePointsOnNewOrder(writer http.ResponseWriter, request *http.Reque
 	err = json.Unmarshal(buf.Bytes(), &userCredentials) // Разбирает данные из массива byte в структуру
 	if err != nil {
 		global.Logger.Info("неверный формат данных")
-		http.Error(writer, fmt.Sprintf("неверный формат данных"), http.StatusBadRequest)
+		http.Error(writer, fmt.Sprintf("неверный формат данных %v", err), http.StatusBadRequest)
 		return
 	}
 

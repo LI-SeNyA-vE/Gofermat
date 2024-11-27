@@ -39,12 +39,12 @@ type UserCredInDataBase struct {
 	Login    string `gorm:"unique;index"`
 	Password []byte `gorm:"BINARY(32)" json:"-"`
 	Model
-	Orders  []OrderUser `gorm:"foreignKey:UserId;references:ID;constraint:OnDelete:CASCADE"`
-	Balance BalanceUser `gorm:"foreignKey:UserId;references:ID;constraint:OnDelete:CASCADE"`
+	Orders  []OrderUser `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
+	Balance BalanceUser `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
 type OrderUser struct {
-	UserId      uint    `gorm:"index" json:"-"`
+	UserID      uint    `gorm:"index" json:"-"`
 	NumberOrder string  `gorm:"unique" json:"order"`
 	Status      string  `gorm:"DEFAULT:NEW"`
 	Accrual     float32 `json:"accrual,omitempty"`
@@ -53,7 +53,7 @@ type OrderUser struct {
 }
 
 type OrdersUserJSON struct {
-	UserId      uint      `json:"-"`
+	UserID      uint      `json:"-"`
 	NumberOrder string    `json:"number"`
 	Status      string    `json:"status"`
 	Accrual     float32   `json:"accrual,omitempty"`
@@ -63,7 +63,7 @@ type OrdersUserJSON struct {
 
 type BalanceUser struct {
 	ID        uint `gorm:"primary_key" json:"-"`
-	UserId    uint `gorm:"unique index" json:"-"`
+	UserID    uint `gorm:"unique index" json:"-"`
 	Current   float32
 	Withdrawn float32
 	CreatedAt time.Time      `gorm:"uploaded_at" json:"-"`
@@ -72,7 +72,7 @@ type BalanceUser struct {
 }
 
 type OrderWithdrawalsUserJSON struct {
-	UserId      uint           `json:"-"`
+	UserID      uint           `json:"-"`
 	NumberOrder string         `json:"order"`
 	Status      string         `json:"-"`
 	Accrual     float32        `json:"-"`
@@ -84,7 +84,7 @@ type OrderWithdrawalsUserJSON struct {
 
 // Для пакета user
 type UserCred struct {
-	Id       uint   `gorm:"primary_key" json:"id"`
+	ID       uint   `gorm:"primary_key" json:"id"`
 	Login    string `gorm:"unique" json:"login"`
 	Password string `json:"password"`
 }

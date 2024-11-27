@@ -26,6 +26,5 @@ func VerificationJWT(next http.Handler) http.Handler {
 		}
 		global.Logger.Infof("не передан токен в мидлваре")
 		http.Error(w, "не передан токен", http.StatusUnauthorized)
-		return
 	})
 }

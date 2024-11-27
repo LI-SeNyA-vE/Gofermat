@@ -57,11 +57,11 @@ func UserUploadingNumberOrder(jwt string, orderNumber string) (statusCode int, e
 	}
 	payload, _ := VerificationToken(jwt)
 	userLogin := payload["sub"].(string)
-	userId, statusCode, err := SearchForUserById(userLogin)
+	userID, statusCode, err := SearchForUserByID(userLogin)
 	if err != nil {
 		return statusCode, fmt.Errorf("ошибка на поиске пользователя %v", err)
 	}
-	var orderUser = global.OrderUser{UserId: userId, NumberOrder: orderNumber}
+	var orderUser = global.OrderUser{UserID: userID, NumberOrder: orderNumber}
 	statusCode, err = UploadingNumberOrder(orderUser)
 
 	if statusCode != http.StatusOK && statusCode != http.StatusConflict {
@@ -136,12 +136,12 @@ func UserListUserOrders(jwt string) (ordersJSON []byte, statusCode int, err erro
 	var orders []global.OrdersUserJSON
 	payload, _ := VerificationToken(jwt)
 	userLogin := payload["sub"].(string)
-	userId, statusCode, err := SearchForUserById(userLogin)
+	userID, statusCode, err := SearchForUserByID(userLogin)
 	if err != nil {
 		return nil, statusCode, fmt.Errorf("ошибка на поиске пользователя %v", err)
 	}
 
-	orders, statusCode, err = GetListUserOrders(userId)
+	orders, statusCode, err = GetListUserOrders(userID)
 	if err != nil {
 		return ordersJSON, statusCode, fmt.Errorf("на этапе получения данных из базы произошла ошибка %v", err)
 	}
@@ -158,11 +158,11 @@ func UserListUserBalance(jwt string) (balanceJSON []byte, statusCode int, err er
 
 	payload, _ := VerificationToken(jwt)
 	userLogin := payload["sub"].(string)
-	userId, statusCode, err := SearchForUserById(userLogin)
+	userID, statusCode, err := SearchForUserByID(userLogin)
 	if err != nil {
 		return nil, statusCode, fmt.Errorf("ошибка на поиске пользователя %v", err)
 	}
-	balance, statusCode, err := GetUserBalance(userId)
+	balance, statusCode, err := GetUserBalance(userID)
 	if err != nil {
 		return balanceJSON, statusCode, fmt.Errorf("на этапе получения данных из базы произошла ошибка %v", err)
 	}
@@ -183,17 +183,17 @@ func UserNewOrderForPoints(orderForPoints global.OrderForPoints, jwt string) (st
 
 	payload, _ := VerificationToken(jwt)
 	userLogin := payload["sub"].(string)
-	userId, statusCode, err := SearchForUserById(userLogin)
+	userID, statusCode, err := SearchForUserByID(userLogin)
 	if err != nil {
 		return statusCode, fmt.Errorf("ошибка на поиске пользователя %v", err)
 	}
-	balance, statusCode, err := GetUserBalance(userId)
+	balance, statusCode, err := GetUserBalance(userID)
 	if err != nil {
 		return statusCode, fmt.Errorf("на этапе получения данных из базы произошла ошибка %v", err)
 	}
 
 	if orderForPoints.Sum <= balance.Current {
-		statusCode, err = DebtSumFromBalanceAndCreateOrders(orderForPoints, userId)
+		statusCode, err = DebtSumFromBalanceAndCreateOrders(orderForPoints, userID)
 		if err != nil {
 			return statusCode, err
 		}
@@ -207,19 +207,19 @@ func OrdersPaidPoints(jwt string) (userOrdersJSON []global.OrderWithdrawalsUserJ
 	payload, _ := VerificationToken(jwt)
 	userLogin := payload["sub"].(string)
 
-	userId, statusCode, err := SearchForUserById(userLogin)
+	userID, statusCode, err := SearchForUserByID(userLogin)
 	if err != nil {
 		return nil, statusCode, fmt.Errorf("ошибка на поиске пользователя %v", err)
 	}
 
-	userOrders, statusCode, err := GetOrdersWithdrawal(userId)
+	userOrders, statusCode, err := GetOrdersWithdrawal(userID)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	for _, userOrder := range userOrders {
 		userOrdersJSON = append(userOrdersJSON, global.OrderWithdrawalsUserJSON{
-			UserId:      userOrder.UserId,
+			UserID:      userOrder.UserID,
 			NumberOrder: userOrder.NumberOrder,
 			Status:      userOrder.Status,
 			Accrual:     userOrder.Accrual,
