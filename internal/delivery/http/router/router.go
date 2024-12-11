@@ -14,7 +14,7 @@ import (
 //POST /api/user/balance/withdraw — запрос на списание баллов с накопительного счёта в счёт оплаты нового заказа;
 //GET /api/user/withdrawals — получение информации о выводе средств с накопительного счёта пользователем.
 
-func SetapRouter() *chi.Mux {
+func SetupRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.LoggingMiddleware)

@@ -29,7 +29,7 @@ func Run() {
 	}
 
 	//Создаёт роутер
-	r := router.SetapRouter()
+	r := router.SetupRouter()
 
 	//Старт сервера
 	startServer(r, configs.ConfigFlag)
