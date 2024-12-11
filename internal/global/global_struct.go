@@ -7,8 +7,8 @@ import (
 
 // Для пакета Connfig
 type Configs struct {
-	DataBase  ConfigDataBase `yaml:"POSTGRES_CONFIG"`
-	Flags     ConfigFlag
+	ConfigDataBase `yaml:"POSTGRES_CONFIG"`
+	ConfigFlag
 	SecretKey string `yaml:"SECRET_KEY"`
 	HashKey   string `yaml:"HASH_KEY"`
 }
@@ -17,6 +17,8 @@ type ConfigFlag struct {
 	RunAddress           string
 	DatabaseURI          string
 	AccrualSystemAddress string
+	SecretKeyForJWT      string
+	SecretKeyForPassword string
 }
 
 type ConfigDataBase struct {

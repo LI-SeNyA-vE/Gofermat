@@ -2,48 +2,51 @@ package config
 
 import (
 	"flag"
-	"github.com/LI-SeNyA-vE/Gofermat/internal/global"
 	"github.com/LI-SeNyA-vE/Gofermat/internal/logger"
-	"gopkg.in/yaml.v3"
+	"github.com/LI-SeNyA-vE/Gofermat/internal/model"
 	"os"
 )
 
-func Start(fileName string) {
+// WrapperConfig обёртка для model.Configs с методами
+type WrapperConfig struct {
+	Configs *model.Configs
+}
+
+func Start() (*model.Configs, error) {
 	err := logger.Initialize("info")
 	if err != nil {
-		return
+		return nil, err
 	}
-	LoadConfigFromFile(fileName)
-	global.Config.Flags = loadConfig()
+	conf := newConfig()
+	conf.loadConfig()
+	return conf.Configs, nil
 }
 
-func LoadConfigFromFile(fileName string) {
-	data, err := os.ReadFile(fileName)
-	if err != nil {
-		global.Logger.Errorf("ошибка чтения конфигурационного файла %s\bОшибка: %v", fileName, err)
-	}
-
-	err = yaml.Unmarshal(data, &global.Config)
-	if err != nil {
-		global.Logger.Errorf("ошибка парсинга Yaml файла в config\b%v", err)
-	}
+func newConfig() *WrapperConfig {
+	return &WrapperConfig{}
 }
 
-func loadConfig() global.ConfigFlag {
+func (conf *WrapperConfig) loadConfig() {
 	// Устанавливаем значения по умолчанию
 	defaultRunAddress := "localhost:8080"
 	defaultDatabaseURI := "postgres://senya:1q2w3e4r5t@localhost:5433/gofermat"
 	defaultAccrualSystemAddress := "http://localhost:8081"
+	defaultSecretKeyForJWT := "SecretKeyForJWT"
+	defaultSecretKeyForPassword := "SecretKeyForPassword"
 
 	// Читаем переменные окружения
 	envRunAddress := os.Getenv("RUN_ADDRESS")
 	envDatabaseURI := os.Getenv("DATABASE_URI")
 	envAccrualSystemAddress := os.Getenv("ACCRUAL_SYSTEM_ADDRESS")
+	envSecretKeyForJWT := os.Getenv("SECRET_KEY_FOR_JWT")
+	envSecretKeyForPassword := os.Getenv("SECRET_KEY_FOR_PASSWORD")
 
 	// Определяем флаги
 	flagRunAddress := flag.String("a", defaultRunAddress, "адрес и порт запуска сервиса")
 	flagDatabaseURI := flag.String("d", defaultDatabaseURI, "адрес подключения к базе данных")
 	flagAccrualSystemAddress := flag.String("r", defaultAccrualSystemAddress, "адрес системы расчёта начислений")
+	flagSecretKeyForJWT := flag.String("j", defaultSecretKeyForJWT, "секретный ключ для создания JWT")
+	flagSecretKeyForPassword := flag.String("w", defaultSecretKeyForPassword, "секретный ключ для HASH пароля")
 
 	// Парсим флаги
 	flag.Parse()
@@ -59,10 +62,21 @@ func loadConfig() global.ConfigFlag {
 		*flagAccrualSystemAddress = envAccrualSystemAddress
 	}
 
+	if envSecretKeyForJWT != "" {
+		*flagSecretKeyForJWT = envSecretKeyForJWT
+	}
+
+	if envSecretKeyForPassword != "" {
+		*flagSecretKeyForPassword = envSecretKeyForPassword
+	}
+
 	// Возвращаем конфигурацию
-	return global.ConfigFlag{
+
+	conf.Configs.ConfigFlag = model.ConfigFlag{
 		RunAddress:           *flagRunAddress,
 		DatabaseURI:          *flagDatabaseURI,
 		AccrualSystemAddress: *flagAccrualSystemAddress,
+		SecretKeyForJWT:      *flagSecretKeyForJWT,
+		SecretKeyForPassword: *flagSecretKeyForPassword,
 	}
 }
